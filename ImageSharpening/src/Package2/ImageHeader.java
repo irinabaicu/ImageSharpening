@@ -16,7 +16,7 @@ public abstract class ImageHeader {
 		return false;
 	}
 
-	protected abstract int readImage(InputStream input, int dimension, int[] pixel) throws IOException;
+	protected abstract int readImage(InputStream input, int dimension) throws IOException;
 
 	protected int convertLittleToBigEndian(byte[] b) {
 
