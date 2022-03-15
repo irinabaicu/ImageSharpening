@@ -1,81 +1,72 @@
 package Package2;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.io.*;
 public class Consumer extends Thread {
 	private Buffer buffer;
-	private String imagePath; // image destination
-	
-	public Consumer(Buffer buffer, String path){
+	private String imagePath;
+
+	public Consumer(Buffer buffer, String path) {
 		this.buffer = buffer;
 		this.imagePath = path;
 	}
-	
-	public void run(){
+
+	public void run() {
+		long startTimer0 = System.currentTimeMillis();
 		int[] value = {};
 		int ct = 0;
+		// se extrage info-headeru; imaginii atunci cand acesta este pus la
+		// dispozitie de catre producer
 		byte[] imageHeader = buffer.getImageHeader();
-		
-		
-		while(ct < 4){
+
+		// La fiecare iteratie se citesc 1/4 date puse la dispozitie de catre
+		// producer
+		while (ct < 4) {
+			long startTimerLoop = System.currentTimeMillis();
 			int[] array = new int[2];
-			value = buffer.get(array);
-			System.out.println(array[0]);
-			System.out.println(array[1]);
+			// pentru a stii de unde sa porneasca citirea si cat sa citeasca,
+			// producer
+			// trimite prin intermediul obiectului Buffer indexul de pornire si
+			// numarul de
+			// pixeli cititi.
+			value = buffer.get(array); // se extrag pixelii cand acestia sunt
+										// pusi in buffer de catre producer
+			//System.out.println(array[0]);
+			//System.out.println(array[1]);
+
+			System.out.println("-----------------------------------------------------------------------------");
 			
-			System.out.println("----------------------------------------------------------------");
-			for(int i = array[0]; i < array[0] + array[1]; i++){
-				System.out.print("Consumer a pus:\t");	
-				System.out.println(String.format("%x", value[i]));
+			for (int i = array[0]; i < array[0] + array[1]; i++) {
+				System.out.print("Consumatorul a citit:\t");
+				System.out.println(String.format("0x%08X", value[i]));
 			}
-			
-			System.out.println("----------------------------------------------------------------");
+
+			System.out.println("------------------------------------------------------------------------------");
+			long elapsedTimeLoop = System.currentTimeMillis() - startTimerLoop;
+			System.out.println("=======================Citirea datelor de la iteratia " + (ct + 1) +
+					"a avut loc in " + elapsedTimeLoop + "ms==========================");
 			ct++;
 		}
 		
+		// se creeaza un obiect de tip SharpenedImage pentru procesarea datelor primite
 		SharpenedImage img = new SharpenedImage(imageHeader, value);
+		// Se aplica filtrul de tip sharpen peste imaginea citita
+		long sharpenTimer = System.currentTimeMillis();
 		img.sharpImage();
+		long elapsedSharpenTime = System.currentTimeMillis() - sharpenTimer;
+		System.out.println("=======================Prelucrarea datelor a avut loc in " 
+		+ elapsedSharpenTime + "ms==========================");
+		int[] processedImage = img.getSharpenedImage();
 		
+		long writeTimer = System.currentTimeMillis();
+		//Imaginea procesata se transpune intr-un vector de octeti si se scrie in fisierul dorit
+		ImageWriter writer = new ImageWriter(img.getHeader(), processedImage);
+		writer.createBMPImage(imagePath, writer.getPixelsByte());
+		long elapsedWriteTime = System.currentTimeMillis() - writeTimer;
+		System.out.println("=======================Scrierea datelor a avut loc in " 
+		+ elapsedWriteTime + "ms==========================");
 		
-		//Path path = Paths.get(imagePath);
-		try (FileOutputStream fos = new FileOutputStream(imagePath)) {
-			   fos.write(imageHeader);
-			   fos.write(img.getPixelsByte());
-			   //fos.close(); There is no more need for this line since you had created the instance of "fos" inside the try. And this will automatically close the OutputStream
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-//        try {
-//            Files.write(path,imageHeader);    // Java 7+ only
-//            Files.write(path, img.getPixelsByte());
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
-		// asigura-te ca la producer trimiti inclusiv bytes de header
-		
-		//InputStream ifs = new ByteArrayInputStream(buffer.pixels);
-		// RGBImage image = new RGBImage();
-		// image.readImageInfo();
-		
-		// process image
-		// sharpener = new ImageSharpener(imageBytes);  //sau buffer bytes
-		// byte[] sharpenedImage = sharpener.sharpen();
-		
-		
-		// write sharpened image to destination path
-		// file = new File (imagePath) ; // creezi fisier destinatie
-		// file.write (sharpenedImage) ; // scrii bytes ale imaginii sharpened in fisier
+		long elapsedTime0 = System.currentTimeMillis() - startTimer0;
+		System.out.println("=======================Munca depusa de Consumer a avut loc in " 
+		+ elapsedTime0 + "ms==========================");
 	}
-	
-	
-	
+
 }

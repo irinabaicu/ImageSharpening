@@ -10,14 +10,18 @@ public abstract class ImageHeader {
 	protected byte[] heightBytes = new byte[4];
 	protected byte[] noOfBitsPerPixel = new byte[2];
 
-	public boolean isBMP(byte[] b) {
+	// Metoda verifica daca formatul fisierului este cel folosit pentru bmp
+	public boolean isBMP(byte... b) {
 		if (b[0] == 'B' && b[1] == 'M')
 			return true;
 		return false;
 	}
 
 	protected abstract int readImage(InputStream input, int dimension) throws IOException;
-
+	
+	// Pentru datele fisierului este folosita reprezentarea Little Endian, iar in Java
+	// se foloseste Big Endian. De aceea este nevoie de o metoda ce converteste 
+	// datele stocate cu Little Endian in date Big Endian.
 	protected int convertLittleToBigEndian(byte[] b) {
 
 		int value = 0;
@@ -27,6 +31,7 @@ public abstract class ImageHeader {
 		return value;
 	}
 
+	// Metode de tip setter
 	protected void setImageType(byte[] imageType) {
 		this.imageType = imageType;
 	}

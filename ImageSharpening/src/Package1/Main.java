@@ -2,7 +2,6 @@ package Package1;
 
 import java.util.Scanner;
 
-import javax.swing.JOptionPane;
 import Package2.Buffer;
 import Package2.Consumer;
 import Package2.Producer;
@@ -12,20 +11,19 @@ public class Main {
 	public static Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {
+		//String source = args[0];
+		//String dest = args[1];
 
-		JOptionPane.showMessageDialog(null, "Acest program aplica asupra unei imagini un filtru de sharpening\n\n"
-				+ "Introduceti in consola calea catre imaginea asupra careia doriti sa aplicati transformarea:\n");
-
-		// path imagine sursa - citit tasttatura
+		 //path imagine sursa
 		System.out.println("Intodu cale fisier sursa.");
-		// String source = scanner.nextLine(); // Read user input
-		// path imagine destinatie - citit tastatura
+		String source = scanner.nextLine();
+		 //path imagine destinatie
 		System.out.println("Intodu cale fisier destinatie.");
-		// String dest = scanner.nextLine(); // Read user input
+		String dest = scanner.nextLine();
 
 		Buffer b = new Buffer();
-		Producer p1 = new Producer(b, "D:\\Java\\ImageSharpening\\book.bmp");
-		Consumer c1 = new Consumer(b, "D:\\Java\\ImageSharpening\\book_after.bmp");
+		Producer p1 = new Producer(b, source);
+		Consumer c1 = new Consumer(b, dest);
 
 		p1.start();
 		c1.start();
